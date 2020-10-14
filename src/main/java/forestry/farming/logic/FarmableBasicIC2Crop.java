@@ -10,26 +10,16 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 
 public class FarmableBasicIC2Crop implements IFarmable {
+
 	@Override
 	public boolean isSaplingAt(World world, int x, int y, int z) {
-		TileEntity crop = world.getTileEntity(x, y, z);
-		if(PluginIC2.instance.isIC2Crop(crop)) {
-			PluginIC2.instance.babysitCrop(crop);
-			return true;
-		}
 		return false;
 	}
 
 	@Override
 	public ICrop getCropAt(World world, int x, int y, int z) {
 		TileEntity crop = world.getTileEntity(x, y, z);
-		if (crop == null) {
-			return null;
-		}
-		if (!PluginIC2.instance.isIC2Crop(crop)) {
-			return null;
-		}
-		if (!PluginIC2.instance.canHarvestCrop(crop)) {
+		if (crop == null || !PluginIC2.instance.isIC2Crop(crop)) {
 			return null;
 		}
 		return new CropBasicIC2Crop(world, crop, new Vect(x, y, z));

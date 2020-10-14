@@ -11,33 +11,15 @@
 package forestry.plugins.compat;
 
 import com.google.common.collect.ImmutableMap;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-
-import cpw.mods.fml.common.registry.GameRegistry;
-import forestry.api.farming.Farmables;
-import forestry.core.config.Config;
-import forestry.farming.logic.FarmableBasicIC2Crop;
-import forestry.farming.logic.FarmableReference;
-import ic2.api.crops.ICropTile;
-import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemStack;
-
-import net.minecraft.tileentity.TileEntity;
-import net.minecraftforge.fluids.FluidRegistry;
-import net.minecraftforge.fluids.FluidStack;
-
 import cpw.mods.fml.common.Optional;
 import cpw.mods.fml.common.event.FMLInterModComms;
 import cpw.mods.fml.common.registry.GameData;
-
+import cpw.mods.fml.common.registry.GameRegistry;
 import forestry.api.circuits.ChipsetManager;
 import forestry.api.circuits.CircuitSocketType;
 import forestry.api.circuits.ICircuitLayout;
 import forestry.api.core.ForestryAPI;
+import forestry.api.farming.Farmables;
 import forestry.api.fuels.EngineBronzeFuel;
 import forestry.api.fuels.FuelManager;
 import forestry.api.recipes.RecipeManagers;
@@ -64,16 +46,23 @@ import forestry.energy.circuits.CircuitElectricEfficiency;
 import forestry.energy.tiles.EngineDefinition;
 import forestry.farming.circuits.CircuitFarmLogic;
 import forestry.farming.logic.FarmLogicRubber;
-import forestry.plugins.ForestryPlugin;
-import forestry.plugins.Plugin;
-import forestry.plugins.PluginApiculture;
-import forestry.plugins.PluginCore;
-import forestry.plugins.PluginEnergy;
-import forestry.plugins.PluginManager;
-
+import forestry.farming.logic.FarmableBasicIC2Crop;
+import forestry.farming.logic.FarmableReference;
+import forestry.plugins.*;
+import ic2.api.crops.ICropTile;
 import ic2.api.item.IC2Items;
 import ic2.api.recipe.RecipeInputItemStack;
 import ic2.api.recipe.Recipes;
+import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.FluidStack;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
 
 @Plugin(pluginID = "IC2", name = "IndustrialCraft2", author = "SirSengir", url = Constants.URL, unlocalizedDescription = "for.plugin.ic2.description")
 public class PluginIC2 extends ForestryPlugin {
@@ -356,7 +345,7 @@ public class PluginIC2 extends ForestryPlugin {
 	@Optional.Method(modid = "IC2")
 	public boolean canHarvestCrop(TileEntity tileEntity) {
 		if (isIC2Crop(tileEntity)) {
-			ICropTile crop = (ICropTile)tileEntity;
+			ICropTile crop = (ICropTile) tileEntity;
 			if (crop.getCrop() == null) {
 				return false;
 			}
@@ -371,8 +360,9 @@ public class PluginIC2 extends ForestryPlugin {
 	 */
 	@Optional.Method(modid = "IC2")
 	public void babysitCrop(TileEntity tileEntity) {
-		if (isIC2Crop(tileEntity)) {
-			ICropTile crop = (ICropTile)tileEntity;
+		ICropTile crop = (ICropTile) tileEntity;
+		crop.setHydrationStorage(200);
+		crop.setNutrientStorage(100);
 			/*
 			This part might be unbalanced until a custom farm logic is added and makes use of weed-ex.
 			if (crop.getCrop() != null) {
@@ -380,13 +370,6 @@ public class PluginIC2 extends ForestryPlugin {
 					crop.reset();
 				}
 			}*/
-			if (crop.getHydrationStorage() <= 200) {
-				crop.setHydrationStorage(200);
-			}
-			if (crop.getNutrientStorage() <= 100) {
-				crop.setNutrientStorage(crop.getNutrientStorage() + 100);
-			}
-		}
 	}
 
 	/**

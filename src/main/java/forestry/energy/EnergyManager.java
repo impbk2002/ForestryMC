@@ -1,22 +1,19 @@
 package forestry.energy;
 
-import java.io.IOException;
-
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
-
-import net.minecraftforge.common.util.ForgeDirection;
-
+import cofh.api.energy.EnergyStorage;
+import cofh.api.energy.IEnergyHandler;
+import cofh.api.energy.IEnergyReceiver;
 import forestry.api.core.ForestryAPI;
 import forestry.core.network.DataInputStreamForestry;
 import forestry.core.network.DataOutputStreamForestry;
 import forestry.core.network.IStreamable;
 import forestry.core.tiles.TileEngine;
 import forestry.core.utils.BlockUtil;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.common.util.ForgeDirection;
 
-import cofh.api.energy.EnergyStorage;
-import cofh.api.energy.IEnergyHandler;
-import cofh.api.energy.IEnergyReceiver;
+import java.io.IOException;
 
 public class EnergyManager implements IEnergyHandler, IStreamable {
 	private enum EnergyTransferMode {
@@ -193,6 +190,9 @@ public class EnergyManager implements IEnergyHandler, IStreamable {
 
 				if (tile instanceof IEnergyReceiver) {
 					IEnergyReceiver receptor = (IEnergyReceiver) tile;
+					sent = receptor.receiveEnergy(orientation.getOpposite(), extractable, simulate);
+				} else if (tile instanceof IEnergyHandler) {
+					IEnergyHandler receptor = (IEnergyHandler) tile;
 					sent = receptor.receiveEnergy(orientation.getOpposite(), extractable, simulate);
 				} else if (tile instanceof TileEngine) {
 					TileEngine receptor = (TileEngine) tile;
