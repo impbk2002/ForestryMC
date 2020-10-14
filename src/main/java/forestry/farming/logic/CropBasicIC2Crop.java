@@ -21,6 +21,14 @@ public class CropBasicIC2Crop extends Crop {
 		this.tileEntity = tileEntity;
 	}
 
+	public Vect getPosition() {
+		return position;
+	}
+
+	public boolean isHarvestable(){
+		return PluginIC2.instance.canHarvestCrop(this.tileEntity);
+	}
+
 	@Override
 	protected boolean isCrop(Vect pos) {
 		return PluginIC2.instance.canHarvestCrop(this.tileEntity);

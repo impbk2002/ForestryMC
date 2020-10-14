@@ -359,10 +359,18 @@ public class PluginIC2 extends ForestryPlugin {
 	 * @param tileEntity
 	 */
 	@Optional.Method(modid = "IC2")
-	public void babysitCrop(TileEntity tileEntity) {
+	public boolean babysitCrop(TileEntity tileEntity) {
 		ICropTile crop = (ICropTile) tileEntity;
-		crop.setHydrationStorage(200);
-		crop.setNutrientStorage(100);
+		boolean ret = false;
+		if (crop.getHydrationStorage() < 20) {
+			crop.setHydrationStorage(200);
+			ret = true;
+		}
+		if (crop.getNutrientStorage() < 10) {
+			crop.setNutrientStorage(100);
+			ret = true;
+		}
+		return ret;
 			/*
 			This part might be unbalanced until a custom farm logic is added and makes use of weed-ex.
 			if (crop.getCrop() != null) {

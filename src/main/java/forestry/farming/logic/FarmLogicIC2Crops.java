@@ -24,6 +24,7 @@ import net.minecraft.util.IIcon;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
@@ -42,12 +43,12 @@ public class FarmLogicIC2Crops extends FarmLogic {
 
     @Override
     public int getFertilizerConsumption() {
-        return 50;
+        return 10;
     }
 
     @Override
     public int getWaterConsumption(float hydrationModifier) {
-        return (int) (200 * hydrationModifier);
+        return (int) (40 * hydrationModifier);
     }
 
     @Override
@@ -67,51 +68,62 @@ public class FarmLogicIC2Crops extends FarmLogic {
 
     @Override
     public boolean cultivate(int x, int y, int z, FarmDirection direction, int extent) {
-        GLOBAL_CROP_LOCATIONS.get(this.housing).forEach(v -> PluginIC2.instance.babysitCrop(v.getTileEntity()));
-        return true;
+        return GLOBAL_CROP_REFERENCES.get(this.housing)
+                .stream()
+                .map(v -> PluginIC2.instance.babysitCrop(v.getTileEntity()))
+                .reduce(false, (a, b) -> a || b);
     }
 
     //sigh, this logic gets reset *EACH TIME ITS CALLED FFS* well just place a static multimap here then...
-    private static final HashMultimap<IFarmHousing, CropBasicIC2Crop> GLOBAL_CROP_LOCATIONS = HashMultimap.create();
+    private static final HashMultimap<IFarmHousing, CropBasicIC2Crop> GLOBAL_CROP_REFERENCES = HashMultimap.create();
     private static final HashMultimap<IFarmHousing, FarmDirection> GLOBAL_VISITED_DIRECTIONS = HashMultimap.create();
 
     private Collection<ICrop> getCropSet() {
-        return GLOBAL_CROP_LOCATIONS
+        return GLOBAL_CROP_REFERENCES
                 .get(this.housing)
                 .stream()
                 .filter(Objects::nonNull)
+                .filter(CropBasicIC2Crop::isHarvestable)
                 .collect(Collectors.toSet());
     }
 
     @Override
     public Collection<ICrop> harvest(int x, int y, int z, FarmDirection direction, int extent) {
-        if (this.housing.getWorld().getWorldTime() % 1200 != 0 && !GLOBAL_CROP_LOCATIONS.get(this.housing).isEmpty() && GLOBAL_VISITED_DIRECTIONS.get(this.housing).contains(direction))
+        if (
+                   this.housing.getWorld().getWorldTime() % 2 != 0
+                && !GLOBAL_CROP_REFERENCES.get(this.housing).isEmpty()
+                && GLOBAL_VISITED_DIRECTIONS.get(this.housing).contains(direction)
+        )
             return getCropSet();
 
-        Vect start = new Vect(x,y,z);
-        for (int lastExtent = 0; lastExtent < extent; lastExtent++) {
-            for (int i = -2; i < 3; i++) {
-                for (int j = 0; j < 2; j++) {
-                    for (int k = -1; k < 2; k++) {
+        if (
+                   this.housing.getWorld().getWorldTime() % 2 == 0
+                && GLOBAL_VISITED_DIRECTIONS.get(this.housing).containsAll(Arrays.asList(FarmDirection.values()))
+        )
+            GLOBAL_VISITED_DIRECTIONS.get(this.housing).clear();
+        Vect start = new Vect(x, y, z);
+        for (int lastExtent = 0; lastExtent <= extent; lastExtent++) {
+            for (int lx = -2; lx < 3; lx++) {
+                for (int ly = 0; ly < 6; ly++) {
+                    for (int lz = -1; lz < 2; lz++) {
                         Vect position = translateWithOffset(x, y + 1, z, direction, lastExtent);
-                        Vect candidate = position.add(i, j, k);
-                        if (Math.abs(candidate.x - start.x) > 5)
+                        Vect candidate = position.add(lx, ly, lz);
+                        if (
+                                   Math.abs(candidate.x - start.x) > 5
+                                || Math.abs(candidate.z - start.z) > 5
+                        )
                             continue;
-
-                        if (Math.abs(candidate.z - start.z) > 5)
-                            continue;
-
                         Optional.ofNullable(
                                 getCrop(this.getWorld(), candidate)
                         )
-                                .ifPresent(f -> GLOBAL_CROP_LOCATIONS.put(this.housing,f));
+                                .ifPresent(f -> GLOBAL_CROP_REFERENCES.put(this.housing, f)
+                                );
                     }
                 }
             }
         }
 
         GLOBAL_VISITED_DIRECTIONS.put(this.housing, direction);
-
         return getCropSet();
     }
 
