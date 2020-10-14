@@ -104,13 +104,13 @@ public class FarmLogicIC2Crops extends FarmLogic {
                         Optional.ofNullable(
                                 getCrop(this.getWorld(), candidate)
                         )
-                                .ifPresent(f -> GLOBAL_CROP_LOCATIONS.get(this.housing).add(f));
+                                .ifPresent(f -> GLOBAL_CROP_LOCATIONS.put(this.housing,f));
                     }
                 }
             }
         }
 
-        GLOBAL_VISITED_DIRECTIONS.get(this.housing).add(direction);
+        GLOBAL_VISITED_DIRECTIONS.put(this.housing, direction);
 
         return getCropSet();
     }
