@@ -102,7 +102,7 @@ public class FarmLogicIC2Crops extends FarmLogic {
                             continue;
 
                         Optional.ofNullable(
-                                getCrop(this.getWorld(), position)
+                                getCrop(this.getWorld(), candidate)
                         )
                                 .ifPresent(f -> GLOBAL_CROP_LOCATIONS.get(this.housing).add(f));
                     }
