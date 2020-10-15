@@ -19,16 +19,13 @@ import forestry.api.farming.IFarmHousing;
 import forestry.core.utils.vect.Vect;
 import forestry.plugins.compat.PluginIC2;
 import ic2.api.item.IC2Items;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.*;
 
 public class FarmLogicIC2Crops extends FarmLogic {
 
@@ -53,7 +50,7 @@ public class FarmLogicIC2Crops extends FarmLogic {
 
     @Override
     public boolean isAcceptedResource(ItemStack itemstack) {
-        return false;
+        return false; //weedex maybe later
     }
 
     @Override
@@ -79,12 +76,24 @@ public class FarmLogicIC2Crops extends FarmLogic {
     private static final HashMultimap<IFarmHousing, FarmDirection> GLOBAL_VISITED_DIRECTIONS = HashMultimap.create();
 
     private Collection<ICrop> getCropSet() {
-        return GLOBAL_CROP_REFERENCES
-                .get(this.housing)
-                .stream()
-                .filter(Objects::nonNull)
-                .filter(CropBasicIC2Crop::isHarvestable)
-                .collect(Collectors.toSet());
+        Set<ICrop> set = new HashSet<>();
+        Set<CropBasicIC2Crop> removal = new HashSet<>();
+        Set<CropBasicIC2Crop> dis = GLOBAL_CROP_REFERENCES.get(this.housing);
+
+        for (CropBasicIC2Crop cropBasicIC2Crop : dis)
+            if (cropBasicIC2Crop == null || !cropBasicIC2Crop.isAlive())
+                removal.add(cropBasicIC2Crop);
+            else if (cropBasicIC2Crop.isHarvestable())
+                set.add(cropBasicIC2Crop);
+
+        dis.removeAll(removal);
+        return set;
+    }
+
+    private static final byte SIDE_LENGTH = 17;
+
+    private static byte getOffsetLength(){
+        return (SIDE_LENGTH / 3) + 1; //PI = 3, TAKE IT OR LEAVE IT.
     }
 
     @Override
@@ -101,23 +110,17 @@ public class FarmLogicIC2Crops extends FarmLogic {
                 && GLOBAL_VISITED_DIRECTIONS.get(this.housing).containsAll(Arrays.asList(FarmDirection.values()))
         )
             GLOBAL_VISITED_DIRECTIONS.get(this.housing).clear();
-        Vect start = new Vect(x, y, z);
         for (int lastExtent = 0; lastExtent <= extent; lastExtent++) {
-            for (int lx = -2; lx < 3; lx++) {
+            for (int lx = -getOffsetLength(); lx <= getOffsetLength(); lx++) {
                 for (int ly = 0; ly < 6; ly++) {
-                    for (int lz = -1; lz < 2; lz++) {
-                        Vect position = translateWithOffset(x, y + 1, z, direction, lastExtent);
-                        Vect candidate = position.add(lx, ly, lz);
-                        if (
-                                   Math.abs(candidate.x - start.x) > 5
-                                || Math.abs(candidate.z - start.z) > 5
-                        )
-                            continue;
+                    for (int lz = -getOffsetLength(); lz <= getOffsetLength(); lz++) {
+                        Vect pos = translateWithOffset(lx + x, ly + y + 1,lz + z, direction, lastExtent);
+                        if (ly == 0)
+                            getWorld().setBlock(pos.x,pos.y + 12,pos.z,Blocks.glowstone);
                         Optional.ofNullable(
-                                getCrop(this.getWorld(), candidate)
+                                getCrop(this.getWorld(), translateWithOffset(lx + x, ly + y + 1,lz + z, direction, lastExtent))
                         )
-                                .ifPresent(f -> GLOBAL_CROP_REFERENCES.put(this.housing, f)
-                                );
+                                .ifPresent(f -> GLOBAL_CROP_REFERENCES.put(this.housing, f));
                     }
                 }
             }
