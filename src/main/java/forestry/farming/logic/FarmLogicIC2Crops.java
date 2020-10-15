@@ -19,7 +19,6 @@ import forestry.api.farming.IFarmHousing;
 import forestry.core.utils.vect.Vect;
 import forestry.plugins.compat.PluginIC2;
 import ic2.api.item.IC2Items;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.StatCollector;
@@ -114,9 +113,6 @@ public class FarmLogicIC2Crops extends FarmLogic {
             for (int lx = -getOffsetLength(); lx <= getOffsetLength(); lx++) {
                 for (int ly = 0; ly < 6; ly++) {
                     for (int lz = -getOffsetLength(); lz <= getOffsetLength(); lz++) {
-                        Vect pos = translateWithOffset(lx + x, ly + y + 1,lz + z, direction, lastExtent);
-                        if (ly == 0)
-                            getWorld().setBlock(pos.x,pos.y + 12,pos.z,Blocks.glowstone);
                         Optional.ofNullable(
                                 getCrop(this.getWorld(), translateWithOffset(lx + x, ly + y + 1,lz + z, direction, lastExtent))
                         )
