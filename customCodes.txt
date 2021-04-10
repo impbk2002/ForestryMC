@@ -1,5 +1,5 @@
         //this goes to forestry.plugins.compat.PluginRotaryCraft.registerRecipes() (right below of RecipeManagers.squeezerManager.addRecipe(10, new ItemStack[]{canolaSeed}, Fluids.SEEDOIL.getFluid(seedAmount)); )
-        Fluid lubricant = FluidRegistry.getFluid("rc lubricant");
+				Fluid lubricant = FluidRegistry.getFluid("rc lubricant");
 				if(lubricant != null && canolaSeed.getHasSubtypes()) {
 					ItemStack dense = canolaSeed.copy();
 					ItemStack husk = canolaSeed.copy();
